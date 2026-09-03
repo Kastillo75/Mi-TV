@@ -114,6 +114,16 @@ const video =
 
 /*
 ==================================================
+WORKER CLOUDFLARE
+==================================================
+*/
+
+const WORKER_URL =
+    "https://mi-tv-antena3.jjavierfontanero.workers.dev/";
+
+
+/*
+==================================================
 INICIAR AUTOMÁTICAMENTE
 ==================================================
 */
@@ -122,136 +132,63 @@ async function iniciar() {
 
     try {
 
-
         /*
-        1. OBTENER LOS CANALES DE ATRESPLAYER
+        1. PEDIR AL WORKER LA URL ACTUAL
+        DE ANTENA 3
         */
 
-        const respuestaCanales = await fetch(
-            "https://api.atresplayer.com/client/v1/info/channels"
-        );
+        const respuesta =
+            await fetch(WORKER_URL);
 
-
-        if (!respuestaCanales.ok) {
+        if (!respuesta.ok) {
 
             throw new Error(
-                "No se pudo consultar Atresplayer"
+                "El Worker no responde: HTTP "
+                + respuesta.status
             );
 
         }
 
 
-        const canales =
-            await respuestaCanales.json();
-
-
         /*
-        2. BUSCAR ANTENA 3
+        2. LEER RESPUESTA
         */
-
-        const canal =
-            canales.find(function(item) {
-
-                return item.link &&
-                       item.link.url === "/antena3/";
-
-            });
-
-
-        if (!canal) {
-
-            throw new Error(
-                "No se encontró Antena 3"
-            );
-
-        }
-
-
-        console.log(
-            "Canal encontrado:",
-            canal
-        );
-
-
-        /*
-        3. PEDIR LA FUENTE ACTUAL
-        */
-
-        const respuestaPlayer =
-            await fetch(
-                "https://api.atresplayer.com/player/v1/live/"
-                + canal.id
-                + "?NODRM=true"
-            );
-
-
-        if (!respuestaPlayer.ok) {
-
-            throw new Error(
-                "Atresplayer no ha devuelto la emisión"
-            );
-
-        }
-
 
         const datos =
-            await respuestaPlayer.json();
+            await respuesta.json();
 
 
         console.log(
-            "Respuesta del reproductor:",
+            "Respuesta del Worker:",
             datos
         );
 
 
         /*
-        4. COMPROBAR SOURCESLIVE
+        3. COMPROBAR URL
         */
 
         if (
-            !datos.sourcesLive ||
-            datos.sourcesLive.length === 0
+            !datos.ok ||
+            !datos.url
         ) {
 
             throw new Error(
-                "No hay una emisión disponible ahora mismo"
-            );
-
-        }
-
-
-        /*
-        5. BUSCAR HLS
-        */
-
-        const fuente =
-            datos.sourcesLive.find(
-                function(item) {
-
-                    return item.type ===
-                        "application/vnd.apple.mpegurl";
-
-                }
-            );
-
-
-        if (!fuente) {
-
-            throw new Error(
-                "No se ha encontrado una fuente HLS"
+                datos.error ||
+                "El Worker no ha devuelto una emisión"
             );
 
         }
 
 
         console.log(
-            "Fuente encontrada:",
-            fuente.src
+            "URL Antena 3:",
+            datos.url
         );
 
 
         /*
-        6. MOSTRAR REPRODUCTOR
+        4. MOSTRAR REPRODUCTOR
         */
 
         mensaje.style.display = "none";
@@ -260,10 +197,10 @@ async function iniciar() {
 
 
         /*
-        7. REPRODUCIR
+        5. REPRODUCIR
         */
 
-        video.src = fuente.src;
+        video.src = datos.url;
 
         video.load();
 
@@ -300,7 +237,7 @@ async function iniciar() {
 
 /*
 ==================================================
-ARRANCAR AL ABRIR LA PÁGINA
+ARRANCAR
 ==================================================
 */
 
