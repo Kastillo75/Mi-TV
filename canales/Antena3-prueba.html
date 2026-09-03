@@ -99,7 +99,8 @@ body {
 
 </div>
 
-
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
 <script>
 
 const mensaje =
@@ -200,25 +201,57 @@ async function iniciar() {
         5. REPRODUCIR
         */
 
-        video.src = datos.url;
+       if (Hls.isSupported()) {
 
-        video.load();
+    const hls = new Hls();
 
+    hls.loadSource(datos.url);
 
-        try {
+    hls.attachMedia(video);
 
-            await video.play();
+    hls.on(Hls.Events.MANIFEST_PARSED, function() {
 
-        }
-
-        catch (error) {
+        video.play().catch(function(error) {
 
             console.log(
                 "Autoplay bloqueado:",
                 error
             );
 
-        }
+        });
+
+    });
+
+}
+else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+
+    video.src = datos.url;
+
+    video.addEventListener(
+        "loadedmetadata",
+        function() {
+
+            video.play().catch(function(error) {
+
+                console.log(
+                    "Autoplay bloqueado:",
+                    error
+                );
+
+            });
+
+        },
+        { once: true }
+    );
+
+}
+else {
+
+    throw new Error(
+        "Este navegador no soporta reproducción HLS"
+    );
+
+}
 
     }
 
