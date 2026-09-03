@@ -463,23 +463,16 @@ async function cargarEPG() {
     try {
         let programas = [];
 
-        /* Primero intentamos el JSON. */
-        try {
-            const respuesta = await fetch(EPG_JSON, { cache: "no-store" });
-            if (respuesta.ok) {
-                const data = await respuesta.json();
-                programas = extraerProgramasJSON(data);
-            }
-        } catch (e) {
-            console.log("EPG JSON no disponible:", e);
-        }
-
-        /* Si el JSON no funciona, intentamos el XML.GZ. */
-        if (!programas.length && "DecompressionStream" in window) {
+        /* Cargamos directamente el EPG XML.GZ */
+        if ("DecompressionStream" in window) {
             try {
                 const respuesta = await fetch(EPG_XML_GZ, { cache: "no-store" });
+
                 if (respuesta.ok) {
-                    const stream = respuesta.body.pipeThrough(new DecompressionStream("gzip"));
+                    const stream = respuesta.body.pipeThrough(
+                        new DecompressionStream("gzip")
+                    );
+
                     const texto = await new Response(stream).text();
                     programas = extraerProgramasXML(texto);
                 }
