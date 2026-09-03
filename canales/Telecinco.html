@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Telecinco</title>
+</head>
+
+<body>
+
+<script>
+const url = "https://www.mediasetinfinity.es/directo/telecinco/";
+
+window.location.href = url;
+
+document.addEventListener("keydown", function(e) {
+
+    if (e.key === "Escape" || e.key === "Backspace") {
+        window.location.href = "../index.html";
+    }
+
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>laSexta</title>
+
+<style>
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background: black;
+    color: white;
+
+    font-family: Arial, sans-serif;
+}
+
+#mensaje {
+
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    background: #111;
+
+    font-size: 26px;
+
+    text-align: center;
+
+    z-index: 10;
+}
+
+#reproductor {
+
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: black;
+}
+
+#video {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div id="mensaje">
+    Buscando emisión de laSexta...
+</div>
+
+
+<div id="reproductor">
+
+    <video
+        id="video"
+        controls
+        autoplay
+        playsinline>
+    </video>
+
+</div>
+
+
+<script>
+
+const mensaje =
+    document.getElementById("mensaje");
+
+const reproductor =
+    document.getElementById("reproductor");
+
+const video =
+    document.getElementById("video");
+
+
+/*
+==================================================
+INICIAR AUTOMÁTICAMENTE
+==================================================
+*/
+
+async function iniciar() {
+
+    try {
+
+
+        /*
+        1. OBTENER CANALES DE ATRESPLAYER
+        */
+
+        const respuestaCanales =
+            await fetch(
+                "https://api.atresplayer.com/client/v1/info/channels"
+            );
+
+
+        if (!respuestaCanales.ok) {
+
+            throw new Error(
+                "No se pudo consultar Atresplayer"
+            );
+
+        }
+
+
+        const canales =
+            await respuestaCanales.json();
+
+
+        /*
+        2. BUSCAR LASEXTA
+        */
+
+        const canal =
+            canales.find(function(item) {
+
+                return item.link &&
+                       item.link.url === "/lasexta/";
+
+            });
+
+
+        if (!canal) {
+
+            throw new Error(
+                "No se encontró laSexta"
+            );
+
+        }
+
+
+        console.log(
+            "Canal encontrado:",
+            canal
+        );
+
+
+        /*
+        3. PEDIR LA FUENTE ACTUAL
+        */
+
+        const respuestaPlayer =
+            await fetch(
+                "https://api.atresplayer.com/player/v1/live/"
+                + canal.id
+                + "?NODRM=true"
+            );
+
+
+        if (!respuestaPlayer.ok) {
+
+            throw new Error(
+                "Atresplayer no ha devuelto la emisión"
+            );
+
+        }
+
+
+        const datos =
+            await respuestaPlayer.json();
+
+
+        console.log(
+            "Respuesta del reproductor:",
+            datos
+        );
+
+
+        /*
+        4. COMPROBAR SOURCESLIVE
+        */
+
+        if (
+            !datos.sourcesLive ||
+            datos.sourcesLive.length === 0
+        ) {
+
+            throw new Error(
+                "No hay emisión disponible"
+            );
+
+        }
+
+
+        /*
+        5. BUSCAR HLS
+        */
+
+        const fuente =
+            datos.sourcesLive.find(
+                function(item) {
+
+                    return item.type ===
+                        "application/vnd.apple.mpegurl";
+
+                }
+            );
+
+
+        if (!fuente) {
+
+            throw new Error(
+                "No se ha encontrado una fuente HLS"
+            );
+
+        }
+
+
+        console.log(
+            "Fuente encontrada:",
+            fuente.src
+        );
+
+
+        /*
+        6. MOSTRAR REPRODUCTOR
+        */
+
+        mensaje.style.display = "none";
+
+        reproductor.style.display = "block";
+
+
+        /*
+        7. REPRODUCIR
+        */
+
+        video.src = fuente.src;
+
+        video.load();
+
+
+        try {
+
+            await video.play();
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "Autoplay bloqueado:",
+                error
+            );
+
+        }
+
+    }
+
+
+    catch (error) {
+
+        console.error(error);
+
+        mensaje.innerHTML =
+            "❌ No se ha podido obtener la emisión de laSexta.";
+
+    }
+
+}
+
+
+/*
+==================================================
+ARRANCAR AL ABRIR
+==================================================
+*/
+
+iniciar();
+
+
+/*
+==================================================
+ESC / ATRÁS → VOLVER AL MENÚ
+==================================================
+*/
+
+document.addEventListener(
+    "keydown",
+    function(e) {
+
+        if (
+            e.key === "Escape" ||
+            e.key === "Backspace"
+        ) {
+
+            e.preventDefault();
+
+            video.pause();
+
+            video.removeAttribute("src");
+
+            video.load();
+
+            window.history.back();
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>

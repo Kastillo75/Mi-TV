@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MI TV</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    text-align: center;
+    padding: 22px 20px 14px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 38px;
+}
+
+.subtitulo {
+    margin-top: 5px;
+    color: #aaa;
+    font-size: 18px;
+}
+
+.canales {
+    width: 94%;
+    max-width: 1500px;
+    margin: 18px auto 30px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.canal {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+    background: #1c1c1c;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.boton {
+    flex: 0 0 48%;
+    min-height: 112px;
+    border: 0;
+    background: #222;
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.boton:focus {
+    outline: 4px solid #fff;
+    outline-offset: -4px;
+    background: #333;
+}
+
+.boton img {
+    max-width: 82%;
+    max-height: 62px;
+    object-fit: contain;
+    display: block;
+}
+
+.numero {
+    position: absolute;
+    top: 7px;
+    left: 9px;
+    font-size: 14px;
+    color: #aaa;
+    font-weight: bold;
+}
+
+.guia {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.guia-linea {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.guia-etiqueta {
+    color: #999;
+    font-size: 11px;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.guia-programa {
+    color: #eee;
+}
+
+.guia-siguiente .guia-programa {
+    color: #aaa;
+}
+
+@media (max-width: 1100px) {
+    .canales {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 650px) {
+    .canales {
+        width: 96%;
+        gap: 9px;
+    }
+
+    .boton {
+        min-height: 96px;
+        flex-basis: 45%;
+    }
+
+    .guia {
+        padding: 8px;
+        font-size: 11px;
+        gap: 5px;
+    }
+
+    h1 {
+        font-size: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>MI TV</h1>
+    <div class="subtitulo">Canales en directo</div>
+</header>
+
+<div class="canales">
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/la1.html')">
+            <span class="numero">1</span>
+            <img src="logos/la1.svg" alt="La 1">
+        </button>
+        <div class="guia" data-epg="La1.TV">
+            <div class="guia-linea guia-ahora"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Cargando...</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Cargando...</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/la2.html')">
+            <span class="numero">2</span>
+            <img src="logos/la2.svg" alt="La 2">
+        </button>
+        <div class="guia" data-epg="La2.TV">
+            <div class="guia-linea guia-ahora"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Cargando...</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Cargando...</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/canal-sur.html')">
+            <span class="numero">3</span>
+            <img src="logos/canal-sur.svg" alt="Canal Sur">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/antena3.html')">
+            <span class="numero">4</span>
+            <img src="logos/antena3.svg" alt="Antena 3">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/antena3series.html')">
+            <span class="numero">5</span>
+            <img src="logos/Atresseries.svg" alt="Atreseries">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/cuatro.html')">
+            <span class="numero">6</span>
+            <img src="logos/Cuatro.svg" alt="Cuatro">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/telecinco.html')">
+            <span class="numero">7</span>
+            <img src="logos/Telecinco.svg" alt="Telecinco">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/lasexta.html')">
+            <span class="numero">8</span>
+            <img src="logos/LaSexta.svg" alt="laSexta">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/boing.html')">
+            <span class="numero">9</span>
+            <img src="logos/Boing.svg" alt="Boing">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/divinity.html')">
+            <span class="numero">10</span>
+            <img src="logos/Divinity.svg" alt="Divinity">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/energy.html')">
+            <span class="numero">11</span>
+            <img src="logos/Energy.svg" alt="Energy">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/fdf.html')">
+            <span class="numero">12</span>
+            <img src="logos/fdf.svg" alt="FDF">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/mega.html')">
+            <span class="numero">13</span>
+            <img src="logos/Mega.svg" alt="Mega">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/neox.html')">
+            <span class="numero">14</span>
+            <img src="logos/Neox.svg" alt="Neox">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/nova.html')">
+            <span class="numero">15</span>
+            <img src="logos/nova.svg" alt="Nova">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/western.html')">
+            <span class="numero">16</span>
+            <img src="logos/western.svg" alt="Western">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+    <div class="canal">
+        <button class="boton" onclick="ir('canales/western-youtube.html')">
+            <span class="numero">17</span>
+            <img src="logos/youtube.svg" alt="Western YouTube">
+        </button>
+        <div class="guia">
+            <div class="guia-linea"><span class="guia-etiqueta">AHORA:</span><span class="guia-programa">Sin guía</span></div>
+            <div class="guia-linea guia-siguiente"><span class="guia-etiqueta">SIGUIENTE:</span><span class="guia-programa">Sin guía</span></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function ir(url) {
+    const botones = document.querySelectorAll(".boton");
+    const indice = Array.from(botones).indexOf(document.activeElement);
+    if (indice >= 0) {
+        localStorage.setItem("ultimoCanal", indice);
+    }
+    window.location.href = url;
+}
+
+/* ---------------------------
+   EPG: prueba La 1 + La 2
+   Fuente oficial TDTChannels
+   --------------------------- */
+
+const EPG_XML_GZ = "https://www.tdtchannels.com/epg/TV.xml.gz";
+
+function normalizarTexto(valor) {
+    return String(valor || "").trim();
+}
+
+function timestamp(valor) {
+    if (typeof valor === "number") {
+        return valor < 100000000000 ? valor * 1000 : valor;
+    }
+
+    let s = normalizarTexto(valor);
+    if (!s) return NaN;
+
+    /* XMLTV: 20260903120000 +0200 */
+    const m = s.match(/^(\d{14})(?:\s*([+-])(\d{2})(\d{2}))?/);
+    if (m) {
+        const y = +m[1].slice(0,4);
+        const mo = +m[1].slice(4,6) - 1;
+        const d = +m[1].slice(6,8);
+        const h = +m[1].slice(8,10);
+        const mi = +m[1].slice(10,12);
+        const se = +m[1].slice(12,14);
+
+        if (m[2]) {
+            const sign = m[2] === "+" ? 1 : -1;
+            const offsetMin = sign * (+m[3] * 60 + +m[4]);
+            return Date.UTC(y, mo, d, h, mi, se) - offsetMin * 60000;
+        }
+
+        return new Date(y, mo, d, h, mi, se).getTime();
+    }
+
+    const n = Number(s);
+    if (!Number.isNaN(n)) return n < 100000000000 ? n * 1000 : n;
+
+    const parsed = Date.parse(s);
+    return Number.isNaN(parsed) ? NaN : parsed;
+}
+
+function extraerProgramasJSON(data) {
+    const encontrados = [];
+
+    function recorrer(obj, canalActual) {
+        if (!obj || typeof obj !== "object") return;
+
+        if (Array.isArray(obj)) {
+            obj.forEach(x => recorrer(x, canalActual));
+            return;
+        }
+
+        let canal = obj.channel || obj.channelId || obj.epg_id || obj.epgid || canalActual;
+        let inicio = obj.start || obj.startTime || obj.start_time || obj.begin || obj.date_start;
+        let fin = obj.stop || obj.end || obj.endTime || obj.end_time || obj.date_end;
+        let titulo = obj.title || obj.name || obj.program || obj.programme || obj.programName;
+
+        if (canal && inicio && fin && titulo && typeof titulo !== "object") {
+            encontrados.push({
+                channel: normalizarTexto(canal),
+                start: timestamp(inicio),
+                stop: timestamp(fin),
+                title: normalizarTexto(titulo)
+            });
+        }
+
+        Object.keys(obj).forEach(k => {
+            if (k !== "title" && k !== "name" && k !== "program" && k !== "programme") {
+                recorrer(obj[k], canal);
+            }
+        });
+    }
+
+    recorrer(data, "");
+    return encontrados.filter(p =>
+        p.channel && p.title && Number.isFinite(p.start) && Number.isFinite(p.stop)
+    );
+}
+
+function extraerProgramasXML(xmlText) {
+    const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+    const result = [];
+
+    doc.querySelectorAll("programme").forEach(p => {
+        const channel = p.getAttribute("channel") || "";
+        const start = timestamp(p.getAttribute("start"));
+        const stop = timestamp(p.getAttribute("stop"));
+        const titleNode = p.querySelector("title");
+        const title = titleNode ? normalizarTexto(titleNode.textContent) : "";
+
+        if (channel && title && Number.isFinite(start) && Number.isFinite(stop)) {
+            result.push({ channel, start, stop, title });
+        }
+    });
+
+    return result;
+}
+
+async function cargarEPG() {
+    try {
+        let programas = [];
+
+        /* Primero intentamos el JSON. */
+        try {
+            const respuesta = await fetch(EPG_JSON, { cache: "no-store" });
+            if (respuesta.ok) {
+                const data = await respuesta.json();
+                programas = extraerProgramasJSON(data);
+            }
+        } catch (e) {
+            console.log("EPG JSON no disponible:", e);
+        }
+
+        /* Si el JSON no funciona, intentamos el XML.GZ. */
+        if (!programas.length && "DecompressionStream" in window) {
+            try {
+                const respuesta = await fetch(EPG_XML_GZ, { cache: "no-store" });
+                if (respuesta.ok) {
+                    const stream = respuesta.body.pipeThrough(new DecompressionStream("gzip"));
+                    const texto = await new Response(stream).text();
+                    programas = extraerProgramasXML(texto);
+                }
+            } catch (e) {
+                console.log("EPG XML.GZ no disponible:", e);
+            }
+        }
+
+        if (!programas.length) {
+            ponerSinGuia("No disponible");
+            return;
+        }
+
+        mostrarEPG(programas);
+
+    } catch (e) {
+        console.log("Error general EPG:", e);
+        ponerSinGuia("No disponible");
+    }
+}
+
+function mostrarEPG(programas) {
+    const ahora = Date.now();
+
+    document.querySelectorAll(".guia[data-epg]").forEach(guia => {
+        const id = guia.dataset.epg;
+        const lista = programas
+            .filter(p => p.channel === id && p.stop > ahora)
+            .sort((a,b) => a.start - b.start);
+
+        const actual = lista.find(p => p.start <= ahora && p.stop > ahora);
+        const siguiente = lista.find(p => p.start > ahora);
+
+        const ahoraEl = guia.querySelector(".guia-ahora .guia-programa");
+        const siguienteEl = guia.querySelector(".guia-siguiente .guia-programa");
+
+        ahoraEl.textContent = actual ? actual.title : "Sin datos";
+        siguienteEl.textContent = siguiente ? siguiente.title : "Sin datos";
+    });
+}
+
+function ponerSinGuia(texto) {
+    document.querySelectorAll(".guia[data-epg]").forEach(guia => {
+        guia.querySelector(".guia-ahora .guia-programa").textContent = texto;
+        guia.querySelector(".guia-siguiente .guia-programa").textContent = texto;
+    });
+}
+
+/* Cargar al abrir y actualizar cada 60 segundos. */
+cargarEPG();
+setInterval(cargarEPG, 60000);
+
+
+/* ---------------------------
+   Navegación original
+   --------------------------- */
+
+const botones = document.querySelectorAll(".boton");
+
+botones.forEach(function(boton, indice) {
+    boton.addEventListener("click", function() {
+        localStorage.setItem("ultimoCanal", indice);
+    });
+});
+
+const ultimoCanal = localStorage.getItem("ultimoCanal");
+
+if (ultimoCanal !== null && botones[ultimoCanal]) {
+    botones[ultimoCanal].focus();
+} else if (botones.length > 0) {
+    botones[0].focus();
+}
+
+document.addEventListener("keydown", function(e) {
+    const actual = document.activeElement;
+
+    if (!actual.classList.contains("boton")) {
+        if (ultimoCanal !== null && botones[ultimoCanal]) {
+            botones[ultimoCanal].focus();
+        } else {
+            botones[0].focus();
+        }
+        return;
+    }
+
+    const posicion = Array.from(botones).indexOf(actual);
+
+    if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (posicion + 1 < botones.length) botones[posicion + 1].focus();
+    }
+
+    if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (posicion > 0) botones[posicion - 1].focus();
+    }
+
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (posicion + 4 < botones.length) botones[posicion + 4].focus();
+    }
+
+    if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (posicion - 4 >= 0) botones[posicion - 4].focus();
+    }
+});
+</script>
+
+</body>
+</html>

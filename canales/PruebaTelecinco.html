@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Prueba Telecinco</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+#boton {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    padding: 30px 60px;
+    font-size: 30px;
+    font-weight: bold;
+
+    background: #333;
+    color: white;
+    border: 3px solid white;
+    border-radius: 15px;
+}
+
+#boton:focus {
+    outline: none;
+    background: #555;
+}
+</style>
+</head>
+
+<body>
+
+<button id="boton">
+▶ TELECINCO
+</button>
+
+<script>
+
+const boton = document.getElementById("boton");
+
+boton.focus();
+
+boton.addEventListener("click", abrir);
+
+boton.addEventListener("keydown", function(e) {
+
+    if (e.key === "Enter") {
+        e.preventDefault();
+        abrir();
+    }
+
+});
+
+function abrir() {
+
+    window.open(
+        "https://www.mediasetinfinity.es/directo/telecinco/",
+        "_blank"
+    );
+
+}
+
+</script>
+
+</body>
+</html>
