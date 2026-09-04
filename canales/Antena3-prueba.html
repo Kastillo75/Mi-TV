@@ -152,7 +152,12 @@
             lowLatencyMode: false
           });
 
-          hls.loadSource(datos.url);
+          const urlProxy =
+           WORKER +
+           "stream?url=" +
+          encodeURIComponent(datos.url);
+
+hls.loadSource(urlProxy);
 
           hls.attachMedia(video);
 
