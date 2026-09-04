@@ -72,7 +72,7 @@
       border: 1px solid #333;
       padding: 15px;
       min-height: 150px;
-      max-height: 350px;
+      max-height: 400px;
       overflow: auto;
       white-space: pre-wrap;
       font-family: Consolas, monospace;
@@ -154,7 +154,8 @@
 
   function cambiarEstado(texto) {
 
-    estado.textContent = texto;
+    estado.textContent =
+      texto;
 
     log(texto);
   }
@@ -174,20 +175,28 @@
 
 
       // -----------------------------------------------------
-      // Obtener URL desde nuestro Worker
+      // Obtener fuente
       // -----------------------------------------------------
 
       const respuesta =
-        await fetch(WORKER, {
-          cache: "no-store"
-        });
+        await fetch(
+          WORKER,
+          {
+            cache: "no-store"
+          }
+        );
 
 
       if (!respuesta.ok) {
 
+        const texto =
+          await respuesta.text();
+
         throw new Error(
           "Worker HTTP " +
-          respuesta.status
+          respuesta.status +
+          " - " +
+          texto
         );
       }
 
@@ -207,10 +216,24 @@
 
       log(
         "Fuente obtenida: " +
-        datos.tipo +
-        " " +
-        datos.dominio
+        datos.tipo
       );
+
+
+      // -----------------------------------------------------
+      // Comprobar URL
+      // -----------------------------------------------------
+
+      if (
+        typeof datos.url !==
+        "string" ||
+        !datos.url
+      ) {
+
+        throw new Error(
+          "El Worker no devolvió URL"
+        );
+      }
 
 
       // -----------------------------------------------------
@@ -222,26 +245,24 @@
 
 
       // -----------------------------------------------------
-      // Parámetros utilizados por el reproductor
-      // oficial de Atresplayer
+      // Parámetros observados en el reproductor oficial
       // -----------------------------------------------------
 
       if (
-        !url.includes("?")
+        datos.tipo ===
+        "application/hls+ssai"
       ) {
 
         url +=
-          "?response=200&bk-ml=1";
-
-      } else {
-
-        url +=
-          "&response=200&bk-ml=1";
+          (url.includes("?")
+            ? "&"
+            : "?") +
+          "response=200&bk-ml=1";
       }
 
 
       log(
-        "URL HLS SSAI:"
+        "URL HLS:"
       );
 
       log(url);
@@ -277,7 +298,7 @@
 
 
         // ---------------------------------------------------
-        // Errores HLS
+        // Errores
         // ---------------------------------------------------
 
         hls.on(
@@ -318,7 +339,7 @@
 
 
         // ---------------------------------------------------
-        // Manifest cargado
+        // Manifest loading
         // ---------------------------------------------------
 
         hls.on(
@@ -333,6 +354,10 @@
         );
 
 
+        // ---------------------------------------------------
+        // Manifest loaded
+        // ---------------------------------------------------
+
         hls.on(
           Hls.Events.MANIFEST_LOADED,
           function () {
@@ -344,6 +369,10 @@
           }
         );
 
+
+        // ---------------------------------------------------
+        // Manifest parsed
+        // ---------------------------------------------------
 
         hls.on(
           Hls.Events.MANIFEST_PARSED,
@@ -371,7 +400,7 @@
 
 
         // ---------------------------------------------------
-        // Cargar URL
+        // Cargar stream
         // ---------------------------------------------------
 
         hls.loadSource(url);
@@ -385,16 +414,13 @@
         )
       ) {
 
-        // ===================================================
-        // HLS NATIVO
-        // ===================================================
-
         cambiarEstado(
-          "Usando HLS nativo del navegador..."
+          "Usando HLS nativo..."
         );
 
 
-        video.src = url;
+        video.src =
+          url;
 
 
         video.addEventListener(
@@ -437,12 +463,10 @@
         error
       );
 
-
       cambiarEstado(
         "ERROR: " +
         error.message
       );
-
 
       log(
         error.stack ||
@@ -463,4 +487,5 @@
 </script>
 
 </body>
+
 </html>
