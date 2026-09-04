@@ -152,12 +152,9 @@
             lowLatencyMode: false
           });
 
-          const urlProxy =
-           WORKER +
-           "stream?url=" +
-          encodeURIComponent(datos.url);
+          console.log("URL HLS directa:", datos.url);
 
-hls.loadSource(urlProxy);
+hls.loadSource(datos.url);
 
           hls.attachMedia(video);
 
