@@ -1,17 +1,20 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Antena 3 - Mi TV</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
   <style>
     * {
       box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -20,48 +23,21 @@
       font-family: Arial, sans-serif;
     }
 
-    .pantalla {
+    .contenedor {
       width: 100%;
       height: 100vh;
+      background: #000;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      position: relative;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
       background: #000;
-      color: #fff;
-      text-align: center;
-    }
-
-    .logo {
-      width: 180px;
-      max-width: 45vw;
-      margin-bottom: 30px;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin: 0 0 12px 0;
-    }
-
-    p {
-      font-size: 18px;
-      color: #ccc;
-      margin: 0 0 30px 0;
-    }
-
-    .boton {
-      display: inline-block;
-      padding: 16px 30px;
-      background: #e30613;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    .boton:active {
-      transform: scale(0.97);
     }
 
     .volver {
@@ -69,11 +45,24 @@
       top: 15px;
       left: 15px;
       padding: 10px 16px;
-      background: rgba(40, 40, 40, 0.9);
+      background: rgba(30, 30, 30, 0.9);
       color: white;
       border: 1px solid #777;
       border-radius: 7px;
       text-decoration: none;
+      font-size: 16px;
+      z-index: 20;
+    }
+
+    .estado {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
       font-size: 16px;
       z-index: 10;
     }
@@ -86,29 +75,158 @@
     ← Volver
   </a>
 
-  <div class="pantalla">
+  <div class="contenedor">
 
-    <img
-      class="logo"
-      src="../logos/antena3.svg"
-      alt="Antena 3"
-    >
-
-    <h1>Antena 3 en directo</h1>
-
-    <p>
-      Pulsa el botón para abrir el directo oficial.
-    </p>
-
-    <a
-      class="boton"
-      href="https://www.atresplayer.com/directos/antena3/?autoplay=true"
-    >
-      VER ANTENA 3 EN DIRECTO
-    </a>
+    <video
+      id="video"
+      controls
+      autoplay
+      playsinline>
+    </video>
 
   </div>
 
+  <div id="estado" class="estado">
+    Obteniendo señal de Antena 3...
+  </div>
+
+  <script>
+
+    const WORKER =
+      "https://mi-tv-antena3.jjavierfontanero.workers.dev/";
+
+    const video =
+      document.getElementById("video");
+
+    const estado =
+      document.getElementById("estado");
+
+
+    async function iniciar() {
+
+      try {
+
+        estado.textContent =
+          "Obteniendo señal de Antena 3...";
+
+
+        // 1. Pedimos al Worker una URL nueva
+        const respuesta =
+          await fetch(WORKER);
+
+        if (!respuesta.ok) {
+          throw new Error(
+            "Worker HTTP " + respuesta.status
+          );
+        }
+
+
+        // 2. Leer JSON
+        const datos =
+          await respuesta.json();
+
+
+        if (!datos.ok || !datos.url) {
+          throw new Error(
+            datos.error || "El Worker no devolvió señal"
+          );
+        }
+
+
+        console.log(
+          "Fuente obtenida:",
+          datos.tipo,
+          datos.dominio
+        );
+
+
+        estado.textContent =
+          "Conectando con Antena 3...";
+
+
+        // 3. Reproducir HLS
+        if (Hls.isSupported()) {
+
+          const hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: false
+          });
+
+          hls.loadSource(datos.url);
+
+          hls.attachMedia(video);
+
+
+          hls.on(
+            Hls.Events.MANIFEST_PARSED,
+            function () {
+
+              estado.textContent =
+                "Antena 3 en directo";
+
+              video.play().catch(() => {});
+
+            }
+          );
+
+
+          hls.on(
+            Hls.Events.ERROR,
+            function (event, data) {
+
+              console.error(
+                "HLS ERROR:",
+                data
+              );
+
+              estado.textContent =
+                "Error reproduciendo la señal";
+            }
+          );
+
+
+        } else if (
+          video.canPlayType(
+            "application/vnd.apple.mpegurl"
+          )
+        ) {
+
+          video.src = datos.url;
+
+          video.addEventListener(
+            "loadedmetadata",
+            function () {
+
+              estado.textContent =
+                "Antena 3 en directo";
+
+              video.play().catch(() => {});
+
+            }
+          );
+
+        } else {
+
+          throw new Error(
+            "Este navegador no soporta HLS"
+          );
+        }
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        estado.textContent =
+          "Error: " + error.message;
+      }
+
+    }
+
+
+    iniciar();
+
+  </script>
+
 </body>
 </html>
-```
