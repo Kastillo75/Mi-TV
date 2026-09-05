@@ -10,7 +10,6 @@
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
-
 body {
     margin: 0;
     background: #111;
@@ -35,13 +34,12 @@ h1 {
     max-width: 1100px;
     margin: 20px auto;
     padding: 15px;
-    background: #222;
     box-sizing: border-box;
+    background: #222;
     white-space: pre-wrap;
     font-family: Consolas, monospace;
     font-size: 13px;
 }
-
 </style>
 
 </head>
@@ -53,12 +51,10 @@ h1 {
 <video
     id="video"
     controls
-    autoplay
     playsinline>
 </video>
 
 <div id="log"></div>
-
 
 <script>
 
@@ -70,7 +66,6 @@ const video =
 
 const logDiv =
     document.getElementById("log");
-
 
 function log(text) {
 
@@ -113,7 +108,6 @@ async function iniciar() {
 
         if (
             !datos.ok ||
-            typeof datos.url !== "string" ||
             !datos.url
         ) {
 
@@ -123,34 +117,21 @@ async function iniciar() {
             );
         }
 
-
-        /*
-         * IMPORTANTE:
-         *
-         * La URL que devuelve ahora el Worker
-         * ya contiene:
-         *
-         * bpkio_sessionid
-         * bpkio_serviceid
-         *
-         * NO añadimos response=200.
-         */
-
-
-        const urlSesion =
-            datos.url;
-
-
         log(
-            "Sesión Broadpeak obtenida."
+            "Sesión Broadpeak: " +
+            (datos.sesion ? "OK" : "NO")
         );
 
 
         /*
-         * El reproductor NO debe ir directamente
-         * a Atresmedia.
-         *
-         * Lo hacemos pasar por nuestro Worker.
+         * URL de sesión obtenida por el Worker.
+         */
+        const urlSesion =
+            datos.url;
+
+
+        /*
+         * TODO pasa por nuestro Worker.
          */
         const urlProxy =
             WORKER +
@@ -161,126 +142,232 @@ async function iniciar() {
 
 
         log(
-            "Cargando HLS mediante Worker..."
+            "URL proxy preparada."
+        );
+
+        log(
+            "Forzando Hls.js..."
         );
 
 
-        if (
-            video.canPlayType(
-                "application/vnd.apple.mpegurl"
-            )
-        ) {
-
-            log(
-                "Reproducción HLS nativa."
-            );
-
-            video.src =
-                urlProxy;
-
-            video.addEventListener(
-                "loadedmetadata",
-                () => {
-
-                    log(
-                        "Metadata cargada."
-                    );
-
-                    video.play()
-                        .catch(() => {});
-                }
-            );
-
-        } else if (
-            Hls.isSupported()
-        ) {
-
-            log(
-                "Hls.js disponible."
-            );
-
-            const hls =
-                new Hls({
-                    enableWorker: true,
-                    lowLatencyMode: true,
-                    backBufferLength: 30
-                });
-
-
-            hls.on(
-                Hls.Events.MANIFEST_LOADING,
-                () => {
-
-                    log(
-                        "Cargando manifest..."
-                    );
-                }
-            );
-
-
-            hls.on(
-                Hls.Events.MANIFEST_LOADED,
-                () => {
-
-                    log(
-                        "Manifest recibido."
-                    );
-                }
-            );
-
-
-            hls.on(
-                Hls.Events.MANIFEST_PARSED,
-                () => {
-
-                    log(
-                        "Manifest interpretado correctamente."
-                    );
-
-                    video.play()
-                        .catch(() => {});
-                }
-            );
-
-
-            hls.on(
-                Hls.Events.ERROR,
-                (event, data) => {
-
-                    console.error(
-                        "HLS ERROR:",
-                        data
-                    );
-
-                    log(
-                        "HLS ERROR: " +
-                        data.details
-                    );
-
-                    if (data.fatal) {
-
-                        log(
-                            "Error HLS fatal."
-                        );
-                    }
-                }
-            );
-
-
-            hls.loadSource(
-                urlProxy
-            );
-
-            hls.attachMedia(
-                video
-            );
-
-        } else {
+        /*
+         * NO usamos HLS nativo.
+         */
+        if (!Hls.isSupported()) {
 
             throw new Error(
-                "Este navegador no soporta HLS."
+                "Hls.js no está soportado en este navegador."
             );
         }
+
+
+        const hls =
+            new Hls({
+
+                enableWorker: true,
+
+                lowLatencyMode: true,
+
+                backBufferLength: 30,
+
+                manifestLoadingMaxRetry: 2,
+
+                manifestLoadingRetryDelay: 1000,
+
+                levelLoadingMaxRetry: 2,
+
+                levelLoadingRetryDelay: 1000
+
+            });
+
+
+        hls.on(
+            Hls.Events.MEDIA_ATTACHED,
+            () => {
+
+                log(
+                    "Vídeo conectado a Hls.js."
+                );
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.MANIFEST_LOADING,
+            (event, data) => {
+
+                log(
+                    "Cargando manifest..."
+                );
+
+                console.log(
+                    "MANIFEST URL:",
+                    data.url
+                );
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.MANIFEST_LOADED,
+            (event, data) => {
+
+                log(
+                    "Manifest recibido."
+                );
+
+                console.log(
+                    "MANIFEST:",
+                    data
+                );
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.MANIFEST_PARSED,
+            (event, data) => {
+
+                log(
+                    "Manifest interpretado."
+                );
+
+                log(
+                    "Calidades: " +
+                    data.levels.length
+                );
+
+                video.play()
+                    .then(() => {
+
+                        log(
+                            "REPRODUCCIÓN INICIADA."
+                        );
+
+                    })
+                    .catch(error => {
+
+                        log(
+                            "Play bloqueado: " +
+                            error.message
+                        );
+
+                    });
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.LEVEL_LOADING,
+            (event, data) => {
+
+                console.log(
+                    "LEVEL_LOADING:",
+                    data.url
+                );
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.LEVEL_LOADED,
+            (event, data) => {
+
+                log(
+                    "Playlist de vídeo recibida."
+                );
+
+                console.log(
+                    "LEVEL_LOADED:",
+                    data
+                );
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.FRAG_LOADING,
+            (event, data) => {
+
+                console.log(
+                    "SEGMENTO:",
+                    data.frag?.url
+                );
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.FRAG_LOADED,
+            () => {
+
+                log(
+                    "Segmento recibido."
+                );
+            }
+        );
+
+
+        hls.on(
+            Hls.Events.ERROR,
+            (event, data) => {
+
+                console.error(
+                    "HLS ERROR:",
+                    data
+                );
+
+                log(
+                    "HLS ERROR: " +
+                    data.details
+                );
+
+                if (data.response) {
+
+                    log(
+                        "HTTP: " +
+                        data.response.code
+                    );
+
+                    log(
+                        "URL: " +
+                        data.response.url
+                    );
+
+                    log(
+                        "Datos recibidos: " +
+                        (
+                            data.response.data
+                                ? data.response.data.length
+                                : 0
+                        )
+                    );
+                }
+
+                if (data.fatal) {
+
+                    log(
+                        "ERROR HLS FATAL."
+                    );
+                }
+            }
+        );
+
+
+        /*
+         * Cargamos SIEMPRE mediante Worker.
+         */
+        hls.loadSource(
+            urlProxy
+        );
+
+        hls.attachMedia(
+            video
+        );
+
+        log(
+            "Hls.js iniciado."
+        );
 
 
     } catch (error) {
