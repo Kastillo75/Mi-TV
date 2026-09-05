@@ -4,103 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Antena 3 - Mi TV</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .contenedor {
-      width: 100%;
-      max-width: 700px;
-      padding: 30px;
-      text-align: center;
-    }
-
-    h1 {
-      margin: 0 0 20px;
-      font-size: 32px;
-    }
-
-    p {
-      margin: 0 0 30px;
-      color: #ccc;
-      font-size: 16px;
-      line-height: 1.5;
-    }
-
-    button {
-      border: 0;
-      border-radius: 8px;
-      padding: 16px 32px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      background: #fff;
-      color: #000;
-    }
-
-    button:hover {
-      opacity: 0.85;
-    }
-
-    .info {
-      margin-top: 25px;
-      color: #888;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="contenedor">
-
-    <h1>Antena 3</h1>
-
-    <p>
-      Acceso directo al reproductor oficial de Atresplayer.
-    </p>
-
-    <button id="abrir">
-      ABRIR ANTENA 3
-    </button>
-
-    <div class="info">
-      La reproducción se realiza directamente en Atresplayer.
-      Mi-TV no utiliza ningún servidor intermedio.
-    </div>
-
-  </div>
+  <title>Antena 3</title>
 
   <script>
-    document.getElementById("abrir").addEventListener("click", function () {
-
-      window.location.href =
-        "https://www.atresplayer.com/directos/antena3/";
-
-    });
+    window.location.replace(
+      "https://www.atresplayer.com/directos/antena3/"
+    );
   </script>
+</head>
 
+<body style="margin:0; background:#000;">
 </body>
 </html>
 ```
