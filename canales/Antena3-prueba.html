@@ -1,393 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<title>Antena 3 - Prueba</title>
+  <title>Antena 3 - Prueba</title>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<style>
-body {
-    margin: 0;
-    background: #111;
-    color: white;
-    font-family: Arial, sans-serif;
-}
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
 
-h1 {
-    margin: 20px;
-}
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-#video {
-    width: 90%;
-    max-width: 1100px;
-    display: block;
-    margin: 20px auto;
-    background: black;
-}
+    .contenedor {
+      width: 100%;
+      max-width: 700px;
+      padding: 30px;
+      text-align: center;
+    }
 
-#log {
-    width: 90%;
-    max-width: 1100px;
-    margin: 20px auto;
-    padding: 15px;
-    box-sizing: border-box;
-    background: #222;
-    white-space: pre-wrap;
-    font-family: Consolas, monospace;
-    font-size: 13px;
-}
-</style>
+    h1 {
+      margin: 0 0 15px;
+      font-size: 28px;
+    }
 
+    p {
+      margin: 0 0 25px;
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 15px 28px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #fff;
+      color: #000;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .info {
+      margin-top: 25px;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>Antena 3 - Prueba</h1>
+  <div class="contenedor">
 
-<video
-    id="video"
-    controls
-    playsinline>
-</video>
+    <h1>Antena 3</h1>
 
-<div id="log"></div>
+    <p>
+      Esta es la prueba de acceso directo al reproductor oficial
+      de Atresplayer.
+    </p>
 
-<script>
+    <button id="abrir">
+      ABRIR ANTENA 3
+    </button>
 
-const WORKER =
-    "https://mi-tv-antena3.jjavierfontanero.workers.dev";
+    <div class="info">
+      La primera vez tendrás que iniciar sesión o registrarte.
+      Después el navegador debería conservar la sesión.
+    </div>
 
-const video =
-    document.getElementById("video");
-
-const logDiv =
-    document.getElementById("log");
-
-function log(text) {
-
-    console.log(text);
-
-    logDiv.textContent +=
-        text + "\n";
-}
+  </div>
 
 
-async function iniciar() {
+  <script>
 
-    try {
+    const URL_ANTENA3 =
+      "https://www.atresplayer.com/directos/antena3/";
 
-        log("Consultando Worker...");
 
-        const respuesta =
-            await fetch(
-                WORKER,
-                {
-                    cache: "no-store"
-                }
-            );
+    document
+      .getElementById("abrir")
+      .addEventListener(
+        "click",
+        function () {
 
-        if (!respuesta.ok) {
+          /*
+           * Navegamos directamente al reproductor
+           * oficial de Antena 3.
+           *
+           * No usamos Worker.
+           * No usamos Hls.js.
+           * No usamos iframe.
+           */
 
-            throw new Error(
-                "Worker HTTP " +
-                respuesta.status
-            );
+          window.location.href =
+            URL_ANTENA3;
+
         }
+      );
 
-        const datos =
-            await respuesta.json();
-
-        log(
-            "Fuente obtenida: " +
-            datos.tipo
-        );
-
-        if (
-            !datos.ok ||
-            !datos.url
-        ) {
-
-            throw new Error(
-                datos.error ||
-                "El Worker no devolvió URL"
-            );
-        }
-
-        log(
-            "Sesión Broadpeak: " +
-            (datos.sesion ? "OK" : "NO")
-        );
-
-
-        /*
-         * URL de sesión obtenida por el Worker.
-         */
-        const urlSesion =
-            datos.url;
-
-
-        /*
-         * TODO pasa por nuestro Worker.
-         */
-        const urlProxy =
-            WORKER +
-            "/stream?url=" +
-            encodeURIComponent(
-                urlSesion
-            );
-
-
-        log(
-            "URL proxy preparada."
-        );
-
-        log(
-            "Forzando Hls.js..."
-        );
-
-
-        /*
-         * NO usamos HLS nativo.
-         */
-        if (!Hls.isSupported()) {
-
-            throw new Error(
-                "Hls.js no está soportado en este navegador."
-            );
-        }
-
-
-        const hls =
-            new Hls({
-
-                enableWorker: true,
-
-                lowLatencyMode: true,
-
-                backBufferLength: 30,
-
-                manifestLoadingMaxRetry: 2,
-
-                manifestLoadingRetryDelay: 1000,
-
-                levelLoadingMaxRetry: 2,
-
-                levelLoadingRetryDelay: 1000
-
-            });
-
-
-        hls.on(
-            Hls.Events.MEDIA_ATTACHED,
-            () => {
-
-                log(
-                    "Vídeo conectado a Hls.js."
-                );
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.MANIFEST_LOADING,
-            (event, data) => {
-
-                log(
-                    "Cargando manifest..."
-                );
-
-                console.log(
-                    "MANIFEST URL:",
-                    data.url
-                );
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.MANIFEST_LOADED,
-            (event, data) => {
-
-                log(
-                    "Manifest recibido."
-                );
-
-                console.log(
-                    "MANIFEST:",
-                    data
-                );
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.MANIFEST_PARSED,
-            (event, data) => {
-
-                log(
-                    "Manifest interpretado."
-                );
-
-                log(
-                    "Calidades: " +
-                    data.levels.length
-                );
-
-                video.play()
-                    .then(() => {
-
-                        log(
-                            "REPRODUCCIÓN INICIADA."
-                        );
-
-                    })
-                    .catch(error => {
-
-                        log(
-                            "Play bloqueado: " +
-                            error.message
-                        );
-
-                    });
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.LEVEL_LOADING,
-            (event, data) => {
-
-                console.log(
-                    "LEVEL_LOADING:",
-                    data.url
-                );
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.LEVEL_LOADED,
-            (event, data) => {
-
-                log(
-                    "Playlist de vídeo recibida."
-                );
-
-                console.log(
-                    "LEVEL_LOADED:",
-                    data
-                );
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.FRAG_LOADING,
-            (event, data) => {
-
-                console.log(
-                    "SEGMENTO:",
-                    data.frag?.url
-                );
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.FRAG_LOADED,
-            () => {
-
-                log(
-                    "Segmento recibido."
-                );
-            }
-        );
-
-
-        hls.on(
-            Hls.Events.ERROR,
-            (event, data) => {
-
-                console.error(
-                    "HLS ERROR:",
-                    data
-                );
-
-                log(
-                    "HLS ERROR: " +
-                    data.details
-                );
-
-                if (data.response) {
-
-                    log(
-                        "HTTP: " +
-                        data.response.code
-                    );
-
-                    log(
-                        "URL: " +
-                        data.response.url
-                    );
-
-                    log(
-                        "Datos recibidos: " +
-                        (
-                            data.response.data
-                                ? data.response.data.length
-                                : 0
-                        )
-                    );
-                }
-
-                if (data.fatal) {
-
-                    log(
-                        "ERROR HLS FATAL."
-                    );
-                }
-            }
-        );
-
-
-        /*
-         * Cargamos SIEMPRE mediante Worker.
-         */
-        hls.loadSource(
-            urlProxy
-        );
-
-        hls.attachMedia(
-            video
-        );
-
-        log(
-            "Hls.js iniciado."
-        );
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        log(
-            "ERROR: " +
-            (
-                error?.message ||
-                String(error)
-            )
-        );
-    }
-}
-
-
-iniciar();
-
-</script>
+  </script>
 
 </body>
 </html>
