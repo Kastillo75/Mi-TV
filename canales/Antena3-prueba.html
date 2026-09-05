@@ -2,490 +2,305 @@
 <html lang="es">
 
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta charset="UTF-8">
+<title>Antena 3 - Prueba</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <title>Antena 3 - Prueba</title>
+<style>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+}
 
-  <style>
+h1 {
+    margin: 20px;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+#video {
+    width: 90%;
+    max-width: 1100px;
+    display: block;
+    margin: 20px auto;
+    background: black;
+}
 
-    body {
-      margin: 0;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
+#log {
+    width: 90%;
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 15px;
+    background: #222;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+}
 
-    header {
-      padding: 15px 20px;
-      background: #1c1c1c;
-      border-bottom: 1px solid #333;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 20px;
-    }
-
-    #estado {
-      padding: 12px 20px;
-      background: #222;
-      color: #ccc;
-      font-size: 14px;
-      white-space: pre-wrap;
-    }
-
-    .video-container {
-      width: 100%;
-      max-width: 1100px;
-      margin: 20px auto;
-      padding: 0 15px;
-    }
-
-    video {
-      width: 100%;
-      display: block;
-      background: black;
-      aspect-ratio: 16 / 9;
-    }
-
-    #logs {
-      width: 100%;
-      max-width: 1100px;
-      margin: 20px auto;
-      padding: 0 15px 30px;
-    }
-
-    #log {
-      background: #050505;
-      border: 1px solid #333;
-      padding: 15px;
-      min-height: 150px;
-      max-height: 400px;
-      overflow: auto;
-      white-space: pre-wrap;
-      font-family: Consolas, monospace;
-      font-size: 12px;
-      color: #ddd;
-    }
-
-  </style>
+</style>
 
 </head>
 
 <body>
 
-  <header>
-    <h1>Antena 3 — Prueba de reproducción</h1>
-  </header>
+<h1>Antena 3 - Prueba</h1>
 
-  <div id="estado">
-    Iniciando...
-  </div>
+<video
+    id="video"
+    controls
+    autoplay
+    playsinline>
+</video>
 
-  <div class="video-container">
-
-    <video
-      id="video"
-      controls
-      autoplay
-      playsinline
-    ></video>
-
-  </div>
-
-  <div id="logs">
-
-    <div id="log"></div>
-
-  </div>
+<div id="log"></div>
 
 
 <script>
 
-  // =========================================================
-  // CONFIGURACIÓN
-  // =========================================================
-
-  const WORKER =
+const WORKER =
     "https://mi-tv-antena3.jjavierfontanero.workers.dev";
 
-
-  const video =
+const video =
     document.getElementById("video");
 
-  const estado =
-    document.getElementById("estado");
-
-  const logElement =
+const logDiv =
     document.getElementById("log");
 
 
-  // =========================================================
-  // LOG
-  // =========================================================
+function log(text) {
 
-  function log(mensaje) {
+    console.log(text);
 
-    console.log(mensaje);
-
-    logElement.textContent +=
-      mensaje + "\n";
-
-    logElement.scrollTop =
-      logElement.scrollHeight;
-  }
+    logDiv.textContent +=
+        text + "\n";
+}
 
 
-  // =========================================================
-  // ESTADO
-  // =========================================================
-
-  function cambiarEstado(texto) {
-
-    estado.textContent =
-      texto;
-
-    log(texto);
-  }
-
-
-  // =========================================================
-  // INICIAR
-  // =========================================================
-
-  async function iniciar() {
+async function iniciar() {
 
     try {
 
-      cambiarEstado(
-        "Consultando Atresplayer..."
-      );
-
-
-      // -----------------------------------------------------
-      // Obtener fuente
-      // -----------------------------------------------------
-
-      const respuesta =
-        await fetch(
-          WORKER,
-          {
-            cache: "no-store"
-          }
-        );
-
-
-      if (!respuesta.ok) {
-
-        const texto =
-          await respuesta.text();
-
-        throw new Error(
-          "Worker HTTP " +
-          respuesta.status +
-          " - " +
-          texto
-        );
-      }
-
-
-      const datos =
-        await respuesta.json();
-
-
-      if (!datos.ok) {
-
-        throw new Error(
-          datos.error ||
-          "El Worker no devolvió una fuente"
-        );
-      }
-
-
-      log(
-        "Fuente obtenida: " +
-        datos.tipo
-      );
-
-
-      // -----------------------------------------------------
-      // Comprobar URL
-      // -----------------------------------------------------
-
-      if (
-        typeof datos.url !==
-        "string" ||
-        !datos.url
-      ) {
-
-        throw new Error(
-          "El Worker no devolvió URL"
-        );
-      }
-
-
-      // -----------------------------------------------------
-      // URL HLS
-      // -----------------------------------------------------
-
-      let url =
-        datos.url;
-
-
-      // -----------------------------------------------------
-      // Parámetros observados en el reproductor oficial
-      // -----------------------------------------------------
-
-      if (
-        datos.tipo ===
-        "application/hls+ssai"
-      ) {
-
-        url +=
-          (url.includes("?")
-            ? "&"
-            : "?") +
-          "response=200&bk-ml=1";
-      }
-
-
-      log(
-        "URL HLS:"
-      );
-
-      log(url);
-
-
-      // =====================================================
-      // HLS.JS
-      // =====================================================
-
-      if (
-        Hls.isSupported()
-      ) {
-
-        cambiarEstado(
-          "Cargando HLS..."
-        );
-
-
-        const hls =
-          new Hls({
-
-            enableWorker: true,
-
-            lowLatencyMode: false,
-
-            backBufferLength: 30,
-
-            maxBufferLength: 30,
-
-            maxMaxBufferLength: 60
-
-          });
-
-
-        // ---------------------------------------------------
-        // Errores
-        // ---------------------------------------------------
-
-        hls.on(
-          Hls.Events.ERROR,
-          function (
-            event,
-            data
-          ) {
-
-            console.error(
-              "HLS ERROR:",
-              data
-            );
-
-            log(
-              "HLS ERROR: " +
-              JSON.stringify(
-                data,
-                null,
-                2
-              )
-            );
-
-
-            if (
-              data.fatal
-            ) {
-
-              cambiarEstado(
-                "Error HLS: " +
-                data.details
-              );
-
-            }
-
-          }
-        );
-
-
-        // ---------------------------------------------------
-        // Manifest loading
-        // ---------------------------------------------------
-
-        hls.on(
-          Hls.Events.MANIFEST_LOADING,
-          function () {
-
-            log(
-              "Cargando manifest..."
-            );
-
-          }
-        );
-
-
-        // ---------------------------------------------------
-        // Manifest loaded
-        // ---------------------------------------------------
-
-        hls.on(
-          Hls.Events.MANIFEST_LOADED,
-          function () {
-
-            log(
-              "Manifest recibido."
-            );
-
-          }
-        );
-
-
-        // ---------------------------------------------------
-        // Manifest parsed
-        // ---------------------------------------------------
-
-        hls.on(
-          Hls.Events.MANIFEST_PARSED,
-          function () {
-
-            cambiarEstado(
-              "Manifest cargado. Reproduciendo..."
-            );
-
-
-            video.play()
-              .catch(
-                error => {
-
-                  log(
-                    "Autoplay bloqueado: " +
-                    error.message
-                  );
-
+        log("Consultando Worker...");
+
+        const respuesta =
+            await fetch(
+                WORKER,
+                {
+                    cache: "no-store"
                 }
-              );
-
-          }
-        );
-
-
-        // ---------------------------------------------------
-        // Cargar stream
-        // ---------------------------------------------------
-
-        hls.loadSource(url);
-
-        hls.attachMedia(video);
-
-
-      } else if (
-        video.canPlayType(
-          "application/vnd.apple.mpegurl"
-        )
-      ) {
-
-        cambiarEstado(
-          "Usando HLS nativo..."
-        );
-
-
-        video.src =
-          url;
-
-
-        video.addEventListener(
-          "loadedmetadata",
-          function () {
-
-            log(
-              "Metadatos cargados."
             );
 
-            video.play()
-              .catch(
-                error => {
+        if (!respuesta.ok) {
 
-                  log(
-                    "Autoplay bloqueado: " +
-                    error.message
-                  );
+            throw new Error(
+                "Worker HTTP " +
+                respuesta.status
+            );
+        }
 
+        const datos =
+            await respuesta.json();
+
+        log(
+            "Fuente obtenida: " +
+            datos.tipo
+        );
+
+        if (
+            !datos.ok ||
+            typeof datos.url !== "string" ||
+            !datos.url
+        ) {
+
+            throw new Error(
+                datos.error ||
+                "El Worker no devolvió URL"
+            );
+        }
+
+
+        /*
+         * IMPORTANTE:
+         *
+         * La URL que devuelve ahora el Worker
+         * ya contiene:
+         *
+         * bpkio_sessionid
+         * bpkio_serviceid
+         *
+         * NO añadimos response=200.
+         */
+
+
+        const urlSesion =
+            datos.url;
+
+
+        log(
+            "Sesión Broadpeak obtenida."
+        );
+
+
+        /*
+         * El reproductor NO debe ir directamente
+         * a Atresmedia.
+         *
+         * Lo hacemos pasar por nuestro Worker.
+         */
+        const urlProxy =
+            WORKER +
+            "/stream?url=" +
+            encodeURIComponent(
+                urlSesion
+            );
+
+
+        log(
+            "Cargando HLS mediante Worker..."
+        );
+
+
+        if (
+            video.canPlayType(
+                "application/vnd.apple.mpegurl"
+            )
+        ) {
+
+            log(
+                "Reproducción HLS nativa."
+            );
+
+            video.src =
+                urlProxy;
+
+            video.addEventListener(
+                "loadedmetadata",
+                () => {
+
+                    log(
+                        "Metadata cargada."
+                    );
+
+                    video.play()
+                        .catch(() => {});
                 }
-              );
+            );
 
-          }
-        );
+        } else if (
+            Hls.isSupported()
+        ) {
+
+            log(
+                "Hls.js disponible."
+            );
+
+            const hls =
+                new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 30
+                });
 
 
-      } else {
+            hls.on(
+                Hls.Events.MANIFEST_LOADING,
+                () => {
 
-        throw new Error(
-          "Este navegador no soporta HLS."
-        );
+                    log(
+                        "Cargando manifest..."
+                    );
+                }
+            );
 
-      }
+
+            hls.on(
+                Hls.Events.MANIFEST_LOADED,
+                () => {
+
+                    log(
+                        "Manifest recibido."
+                    );
+                }
+            );
+
+
+            hls.on(
+                Hls.Events.MANIFEST_PARSED,
+                () => {
+
+                    log(
+                        "Manifest interpretado correctamente."
+                    );
+
+                    video.play()
+                        .catch(() => {});
+                }
+            );
+
+
+            hls.on(
+                Hls.Events.ERROR,
+                (event, data) => {
+
+                    console.error(
+                        "HLS ERROR:",
+                        data
+                    );
+
+                    log(
+                        "HLS ERROR: " +
+                        data.details
+                    );
+
+                    if (data.fatal) {
+
+                        log(
+                            "Error HLS fatal."
+                        );
+                    }
+                }
+            );
+
+
+            hls.loadSource(
+                urlProxy
+            );
+
+            hls.attachMedia(
+                video
+            );
+
+        } else {
+
+            throw new Error(
+                "Este navegador no soporta HLS."
+            );
+        }
 
 
     } catch (error) {
 
-      console.error(
-        "ERROR:",
-        error
-      );
+        console.error(error);
 
-      cambiarEstado(
-        "ERROR: " +
-        error.message
-      );
-
-      log(
-        error.stack ||
-        error.message
-      );
-
+        log(
+            "ERROR: " +
+            (
+                error?.message ||
+                String(error)
+            )
+        );
     }
+}
 
-  }
 
-
-  // =========================================================
-  // ARRANCAR
-  // =========================================================
-
-  iniciar();
+iniciar();
 
 </script>
 
 </body>
-
 </html>
